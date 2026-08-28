@@ -1,4 +1,4 @@
-![SPRINTZEN logo](frontend/src/assets/sprintzen-logo.svg)
+
 
 # SPRINTZEN 🌀
 
