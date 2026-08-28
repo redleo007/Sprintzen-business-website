@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { FIBONACCI, nearestFibonacci } from "@/lib/sprint-analytics";
+import { useProjectMembers } from "@/hooks/use-project-members";
 
 export const Route = createFileRoute("/_authenticated/board/$sessionId")({
   head: () => ({
@@ -114,21 +115,7 @@ function SessionPage() {
     },
   });
 
-  const membersQuery = useQuery({
-    queryKey: ["session-members", sessionQuery.data?.project_id],
-    enabled: !!sessionQuery.data?.project_id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("project_members")
-        .select("user_id, profiles:profiles!inner(id, name, avatar_color)")
-        .eq("project_id", sessionQuery.data!.project_id);
-      if (error) throw error;
-      return (data ?? []) as {
-        user_id: string;
-        profiles: { id: string; name: string; avatar_color: string };
-      }[];
-    },
-  });
+  const membersQuery = useProjectMembers(sessionQuery.data?.project_id);
 
   useEffect(() => {
     if (sessionQuery.data && !notesDirty) setNotes(sessionQuery.data.notes ?? "");
@@ -490,10 +477,10 @@ function SessionPage() {
                             <span
                               className="size-2 rounded-full"
                               style={{
-                                backgroundColor: member?.profiles.avatar_color ?? undefined,
+                                backgroundColor: member?.avatar_color ?? undefined,
                               }}
                             />
-                            {member?.profiles.name ?? "Teammate"}: <b>{v.value}</b>
+                            {member?.name ?? "Teammate"}: <b>{v.value}</b>
                           </span>
                         );
                       })}
@@ -516,11 +503,11 @@ function SessionPage() {
                 <div key={m.user_id} className="flex items-center gap-2 text-sm">
                   <span
                     className="flex size-7 items-center justify-center rounded-full text-[10px] font-bold text-primary-foreground"
-                    style={{ backgroundColor: m.profiles.avatar_color }}
+                    style={{ backgroundColor: m.avatar_color }}
                   >
-                    {(m.profiles.name || "?").slice(0, 2).toUpperCase()}
+                    {(m.name || "?").slice(0, 2).toUpperCase()}
                   </span>
-                  {m.profiles.name}
+                  {m.name}
                 </div>
               ))}
             </div>

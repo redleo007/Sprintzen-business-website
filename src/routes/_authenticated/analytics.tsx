@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useActiveProject } from "@/hooks/use-active-project";
 import { computeAnalytics, type StoryLike, type MemberLike } from "@/lib/sprint-analytics";
+import { fetchProjectMembers } from "@/hooks/use-project-members";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   head: () => ({

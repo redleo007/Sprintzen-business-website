@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, UserMinus, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useActiveProject } from "@/hooks/use-active-project";
+import { useProjectMembers } from "@/hooks/use-project-members";
 
 export const Route = createFileRoute("/_authenticated/team")({
   head: () => ({
@@ -43,22 +44,7 @@ function TeamPage() {
   const [email, setEmail] = useState("");
   const [open, setOpen] = useState(false);
 
-  const membersQuery = useQuery({
-    queryKey: ["members", projectId],
-    enabled: !!projectId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("project_members")
-        .select("user_id, role, profiles:profiles!inner(id, name, email, avatar_color)")
-        .eq("project_id", projectId!);
-      if (error) throw error;
-      return (data ?? []) as {
-        user_id: string;
-        role: string;
-        profiles: { id: string; name: string; email: string; avatar_color: string };
-      }[];
-    },
-  });
+  const membersQuery = useProjectMembers(projectId);
 
   const addMember = useMutation({
     mutationFn: async () => {
@@ -184,14 +170,14 @@ function TeamPage() {
           <div key={m.user_id} className="flex items-center gap-4 px-5 py-4">
             <span
               className="flex size-10 items-center justify-center rounded-full text-xs font-bold text-primary-foreground"
-              style={{ backgroundColor: m.profiles.avatar_color }}
+              style={{ backgroundColor: m.avatar_color }}
             >
-              {(m.profiles.name || "?").slice(0, 2).toUpperCase()}
+              {(m.name || "?").slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <div className="truncate font-medium">{m.profiles.name}</div>
+              <div className="truncate font-medium">{m.name}</div>
               <div className="truncate text-xs text-muted-foreground">
-                {m.profiles.email}
+                {m.email}
               </div>
             </div>
             <div className="ml-auto flex items-center gap-3">
