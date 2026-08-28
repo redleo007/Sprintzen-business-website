@@ -136,7 +136,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           {projects.length > 0 && (
-            <Select value={projectId ?? undefined} onValueChange={select}>
+            <Select {...(projectId ? { value: projectId } : {})} onValueChange={select}>
               <SelectTrigger className="w-[210px]">
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
