@@ -60,17 +60,13 @@ function AnalyticsPage() {
         stories = (data ?? []) as StoryLike[];
       }
 
-      const { data: memberRows, error: membersError } = await supabase
-        .from("project_members")
-        .select("user_id, role, profiles:profiles!inner(id, name)")
-        .eq("project_id", projectId!);
-      if (membersError) throw membersError;
-
-      const members: MemberLike[] = (memberRows ?? []).map((m) => ({
+      const memberRows = await fetchProjectMembers(projectId!);
+      const members: MemberLike[] = memberRows.map((m) => ({
         id: m.user_id,
-        name: (m.profiles as { name: string }).name,
-        role: (m.role as MemberLike["role"]) ?? "TeamMember",
+        name: m.name,
+        role: m.role,
       }));
+
 
       const { data: cards, error: cardsError } = await supabase
         .from("kanban_cards")
