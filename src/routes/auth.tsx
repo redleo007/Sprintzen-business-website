@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Zap } from "lucide-react";
+import { Loader2, Sparkles, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
+import { ensureDemoAccount } from "@/lib/demo.functions";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).optional(),
@@ -93,6 +94,24 @@ function AuthPage() {
       await navigate({ to: "/dashboard" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const demoLogin = async () => {
+    setBusy(true);
+    try {
+      const demo = await ensureDemoAccount();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: demo.email,
+        password: demo.password,
+      });
+      if (error) throw error;
+      toast.success("You're in the demo workspace — explore freely!");
+      await navigate({ to: "/dashboard" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Demo sign-in failed");
     } finally {
       setBusy(false);
     }
@@ -205,9 +224,35 @@ function AuthPage() {
             <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
           </div>
 
-          <Button variant="outline" className="w-full" onClick={google} disabled={busy}>
-            Continue with Google
-          </Button>
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={google}
+              disabled={busy}
+            >
+              Continue with Google
+            </Button>
+
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              onClick={demoLogin}
+              disabled={busy}
+            >
+              {busy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
+              Try the demo workspace
+            </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              Demo signs you in as a Team Leader with a seeded board and poker session.
+            </p>
+          </div>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {mode === "signup" ? "Already have an account?" : "New to Sprintzen?"}{" "}
