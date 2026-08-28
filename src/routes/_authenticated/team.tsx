@@ -44,7 +44,7 @@ function TeamPage() {
   const [email, setEmail] = useState("");
   const [open, setOpen] = useState(false);
 
-  const membersQuery = useProjectMembers(projectId);
+  const membersQuery = useProjectMembers(projectId ?? undefined);
 
   const addMember = useMutation({
     mutationFn: async () => {
